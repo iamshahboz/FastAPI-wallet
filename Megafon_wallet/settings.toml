@@ -1,0 +1,3 @@
+[database]
+postgresql_url =  "postgresql+asyncpg://postgres:toronto##90@localhost/wallet"
+mysql_url = "mysql+aiomysql://"
