@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import toml
 
+# this is for security reason
 config_data = toml.load('settings.toml')
 
 
