@@ -1,8 +1,4 @@
 from pydantic import BaseModel, Field
-from typing import Optional
-from fastapi.encoders import jsonable_encoder
-from sqlalchemy import Float
-
 
 '''
 Schema is a validator for our models
@@ -50,6 +46,14 @@ class DodoPizza(BaseModel):
 
     class Config:
         orm_mode = True  
+
+class Salomat_tj(BaseModel):
+    number: int  
+    payment_sum: int
+
+    class Config:
+        orm_mode = True
+
 
 class Kitobz(BaseModel):
     number: int 
