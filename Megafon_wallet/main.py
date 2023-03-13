@@ -6,6 +6,9 @@ from postgresdb import SessionLocal as postgres_session,engine as postgres_engin
 from mysqldb import SessionLocal as mysql_session,engine as mysql_engine,Base as mysql_base
 from sqlalchemy import select
 from sqlalchemy import desc
+import asyncio
+from time import time
+import aiohttp
 
 
 app = FastAPI(
@@ -257,6 +260,129 @@ async def dodo_pizza_pay(request: schemas.DodoPizza, db: AsyncSession = Depends(
     else:
         raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
                             detail=f'{"You dont have enough balance"}')
+    
+
+# api to get all paid salomat_tj
+@app.get('/salomat_tj', status_code=status.HTTP_200_OK, tags=['salomat_tj'])
+async def salomat_tj():
+    async with mysql_session() as session:
+        all_salomat_tj = await session.execute(select(models.Salomat_tj).order_by(models.Salomat_tj.id))
+    return all_salomat_tj.scalars().all()
+
+
+
+
+# api to pay for salomat_tj
+@app.post('/salomat_tj', status_code=status.HTTP_202_ACCEPTED, tags=['salomat_tj'])
+async def salomat_tj_pay(request: schemas.Salomat_tj, db: AsyncSession = Depends(get_mysql_db)):
+    last_wallet = await db.execute(select(models.Wallet).order_by(desc(models.Wallet.id)).limit(1))
+    last_wallet = last_wallet.scalar_one()
+    if last_wallet.balance >= request.payment_sum:
+        new_balance = last_wallet.balance - request.payment_sum
+        salomat_tj = models.Salomat_tj(number=request.number,
+                                        payment_sum=request.payment_sum)
+        
+        last_wallet.balance = new_balance
+        await db.commit()
+        db.add(salomat_tj)
+        await db.commit()
+        await db.refresh(salomat_tj)
+        return salomat_tj
+    
+    else:
+        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                            detail=f'{"You dont have enough balance"}')
+    
+
+# api to get all paid kitobz
+@app.get('/kitobz', status_code=status.HTTP_200_OK, tags=['kitobz'])
+async def kitobz():
+    async with mysql_session() as session:
+        kitobz = await session.execute(select(models.Kitobz).order_by(models.Kitobz.id))
+    return kitobz.scalars().all()
+
+
+
+
+# api to pay for kitobz
+@app.post('/kitobz', status_code=status.HTTP_202_ACCEPTED, tags=['kitobz'])
+async def kitobz_pay(request: schemas.Kitobz, db: AsyncSession = Depends(get_mysql_db)):
+    last_wallet = await db.execute(select(models.Wallet).order_by(desc(models.Wallet.id)).limit(1))
+    last_wallet = last_wallet.scalar_one()
+    if last_wallet.balance >= request.payment_sum:
+        new_balance = last_wallet.balance - request.payment_sum
+        kitobz = models.Kitobz(number=request.number,
+                               payment_sum=request.payment_sum)
+        
+        last_wallet.balance = new_balance
+        await db.commit()
+        db.add(kitobz)
+        await db.commit()
+        await db.refresh(kitobz)
+        return kitobz
+    
+    else:
+        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                            detail=f'{"You dont have enough balance"}')
+    
+
+
+# api to get all paid tojnet
+@app.get('/tojnet', status_code=status.HTTP_200_OK, tags=['tojnet'])
+async def tojnet():
+    async with mysql_session() as session:
+        tojnet = await session.execute(select(models.Tojnet).order_by(models.Tojnet.id))
+    return tojnet.scalars().all()
+
+
+
+
+# api to pay for tojnet
+@app.post('/tojnet', status_code=status.HTTP_202_ACCEPTED, tags=['tojnet'])
+async def tojnet_pay(request: schemas.Tojnet, db: AsyncSession = Depends(get_mysql_db)):
+    last_wallet = await db.execute(select(models.Wallet).order_by(desc(models.Wallet.id)).limit(1))
+    last_wallet = last_wallet.scalar_one()
+    if last_wallet.balance >= request.payment_sum:
+        new_balance = last_wallet.balance - request.payment_sum
+        tojnet = models.Tojnet(account_number=request.account_number,
+                               payment_sum=request.payment_sum)
+        
+        last_wallet.balance = new_balance
+        await db.commit()
+        db.add(tojnet)
+        await db.commit()
+        await db.refresh(tojnet)
+        return tojnet
+    
+    else:
+        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                            detail=f'{"You dont have enough balance"}')
+    
+
+
+
+# #api to send http request to internal servers
+
+
+
+@app.get("/cat_fact",tags=['aiohttp_request'])
+async def get_cat_fact():
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://cat-fact.herokuapp.com/facts/") as response:
+            data = await response.json()
+            return data
+        
+
+@app.get("/quotes",tags=['aiohttp_request'])
+async def get_quotes():
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://ron-swanson-quotes.herokuapp.com/v2/quotes") as response:
+            data = await response.json()
+            return data
+
+
+
+
     
 
 
