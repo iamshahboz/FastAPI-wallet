@@ -7,6 +7,7 @@ import toml
 # this is for security reason
 config_data = toml.load('settings.toml')
 
+
 #this is for postgresdb
 SQLALCHEMY_MYSQL_DATABASE_URL = config_data['database']['mysql_url']
 engine = create_async_engine(
