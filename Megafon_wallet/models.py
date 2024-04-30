@@ -1,7 +1,6 @@
 # importing dependencies
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from postgresdb import Base as postgresbase
-from mysqldb import Base as mysqlbase
 from sqlalchemy.orm import relationship
 
 
@@ -71,68 +70,6 @@ class Tojnet(postgresbase):
     
 
 
-# Models defiend for MySQL
-class Wallet(mysqlbase):
-    __tablename__ = 'wallets'
-    id = Column(Integer, primary_key=True, index=True)
-    phone_number = Column(Integer, unique=True)
-    balance = Column(Integer, nullable=False)
-
-
-class Mobile_Network(mysqlbase):
-    __tablename__ = 'mobile_networks'
-    id = Column(Integer, primary_key=True, index=True)
-    phone_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-
-class Mavgi_Somon(mysqlbase):
-    __tablename__ = "mavgi_somon"
-    id = Column(Integer, primary_key=True, index=True)
-    account_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-
-class Shabakatj(mysqlbase):
-    __tablename__= "shabakatj"
-    id = Column(Integer, primary_key=True, index=True)
-    account_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-
-class Khayriyai_Ozod(mysqlbase):
-    __tablename__= "khayriyai_ozod"
-    id = Column(Integer, primary_key=True, index=True)
-    phone_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-# The models belove will be stored in MySQL database, including Wallet model
-class DodoPizza(mysqlbase):
-    __tablename__= "dodopizza"
-    id = Column(Integer, primary_key=True, index=True)
-    order_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
- 
-
-class Salomat_tj(mysqlbase):
-    __tablename__= "salomat_tj"
-    id = Column(Integer, primary_key=True, index=True)
-    number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-
-class Kitobz(mysqlbase):
-    __tablename__= "kitobz"
-    id = Column(Integer, primary_key=True, index=True)
-    number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-
-class Tojnet(mysqlbase):
-    __tablename__= "tojnet"
-    id = Column(Integer, primary_key=True, index=True)
-    account_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
 
         
 

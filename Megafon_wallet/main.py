@@ -3,12 +3,12 @@ from fastapi import Depends, status, Response, HTTPException
 import models, schemas
 from sqlalchemy.ext.asyncio import AsyncSession
 from postgresdb import SessionLocal as postgres_session,engine as postgres_engine,Base as postgres_base
-from mysqldb import SessionLocal as mysql_session,engine as mysql_engine,Base as mysql_base
 from sqlalchemy import select
 from sqlalchemy import desc
 import asyncio
 from time import time
 import aiohttp
+
 
 
 app = FastAPI(
@@ -17,16 +17,10 @@ app = FastAPI(
 )
 
 
-@app.on_event("startup")
-async def startup():
-    async with postgres_engine.begin() as conn:
-        await conn.run_sync(postgres_base.metadata.create_all)
-    await startup_mysql()
 
 
-async def startup_mysql():
-    async with mysql_engine.begin() as conn:
-        await conn.run_sync(mysql_base.metadata.create_all)
+
+
 
 
 async def get_postgres_db():
@@ -36,12 +30,7 @@ async def get_postgres_db():
     finally:
         await db_session.close()
 
-async def get_mysql_db():
-    db_session = mysql_session()
-    try:
-        yield db_session
-    finally:
-        await db_session.close()
+
 
 
 
@@ -194,171 +183,6 @@ async def khayriyai_ozod_pay(request: schemas.Khayriyai_Ozod, db: AsyncSession =
     
 
 #the api's below will be executed in Mysql database
-
-# api to get all wallets
-@app.get('/mysql_wallet', status_code=status.HTTP_200_OK, tags=['wallet_mysql'])
-async def all_wallets():
-    async with mysql_session() as session:
-        wallets = await session.execute(select(models.Wallet).order_by(models.Wallet.id))
-    return wallets.scalars().all()
-
-
-# api to get the wallet by id
-@app.get('/mysql_wallet/{id}', status_code=status.HTTP_200_OK, tags=['wallet_mysql'])
-async def get_wallet(id:int, response: Response, db: AsyncSession = Depends(get_mysql_db)):
-    wallet = await db.execute(select(models.Wallet).where(models.Wallet.id == id))
-    wallet = wallet.scalar()               
-    if not wallet:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f'Wallet with an id {id} is not available')
-    return wallet
-
-
-# api to create a wallet
-@app.post('/mysql_wallet', status_code=status.HTTP_201_CREATED, tags=['wallet_mysql'])
-async def create_wallet(request: schemas.Wallet, db: AsyncSession = Depends(get_mysql_db)):
-    user_exists = await db.execute(select(models.Wallet).where(models.Wallet.phone_number==request.phone_number))
-    if user_exists.scalar():
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,detail="This phone number is already registered")
-    
-    new_wallet = models.Wallet(phone_number=request.phone_number,
-                             balance=request.balance)
-# if we don't add and commit the query to the db it will not be added
-    db.add(new_wallet)
-    await db.commit()
-    await db.refresh(new_wallet)
-    return new_wallet
-
-
-# api to get all paid dodopizza
-@app.get('/dodo_pizza', status_code=status.HTTP_200_OK, tags=['dodo_pizza'])
-async def dodo_pizza():
-    async with mysql_session() as session:
-        all_dodopizza = await session.execute(select(models.DodoPizza).order_by(models.DodoPizza.id))
-    return all_dodopizza.scalars().all()
-
-
-
-
-# api to pay for dodopizza
-@app.post('/dodo_pizza', status_code=status.HTTP_202_ACCEPTED, tags=['dodo_pizza'])
-async def dodo_pizza_pay(request: schemas.DodoPizza, db: AsyncSession = Depends(get_mysql_db)):
-    last_wallet = await db.execute(select(models.Wallet).order_by(desc(models.Wallet.id)).limit(1))
-    last_wallet = last_wallet.scalar_one()
-    if last_wallet.balance >= request.payment_sum:
-        new_balance = last_wallet.balance - request.payment_sum
-        dodo_pizza = models.DodoPizza(order_number=request.order_number,
-                                          payment_sum=request.payment_sum)
-        
-        last_wallet.balance = new_balance
-        await db.commit()
-        db.add(dodo_pizza)
-        await db.commit()
-        await db.refresh(dodo_pizza)
-        return dodo_pizza
-    
-    else:
-        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                            detail=f'{"You dont have enough balance"}')
-    
-
-# api to get all paid salomat_tj
-@app.get('/salomat_tj', status_code=status.HTTP_200_OK, tags=['salomat_tj'])
-async def salomat_tj():
-    async with mysql_session() as session:
-        all_salomat_tj = await session.execute(select(models.Salomat_tj).order_by(models.Salomat_tj.id))
-    return all_salomat_tj.scalars().all()
-
-
-
-
-# api to pay for salomat_tj
-@app.post('/salomat_tj', status_code=status.HTTP_202_ACCEPTED, tags=['salomat_tj'])
-async def salomat_tj_pay(request: schemas.Salomat_tj, db: AsyncSession = Depends(get_mysql_db)):
-    last_wallet = await db.execute(select(models.Wallet).order_by(desc(models.Wallet.id)).limit(1))
-    last_wallet = last_wallet.scalar_one()
-    if last_wallet.balance >= request.payment_sum:
-        new_balance = last_wallet.balance - request.payment_sum
-        salomat_tj = models.Salomat_tj(number=request.number,
-                                        payment_sum=request.payment_sum)
-        
-        last_wallet.balance = new_balance
-        await db.commit()
-        db.add(salomat_tj)
-        await db.commit()
-        await db.refresh(salomat_tj)
-        return salomat_tj
-    
-    else:
-        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                            detail=f'{"You dont have enough balance"}')
-    
-
-# api to get all paid kitobz
-@app.get('/kitobz', status_code=status.HTTP_200_OK, tags=['kitobz'])
-async def kitobz():
-    async with mysql_session() as session:
-        kitobz = await session.execute(select(models.Kitobz).order_by(models.Kitobz.id))
-    return kitobz.scalars().all()
-
-
-
-
-# api to pay for kitobz
-@app.post('/kitobz', status_code=status.HTTP_202_ACCEPTED, tags=['kitobz'])
-async def kitobz_pay(request: schemas.Kitobz, db: AsyncSession = Depends(get_mysql_db)):
-    last_wallet = await db.execute(select(models.Wallet).order_by(desc(models.Wallet.id)).limit(1))
-    last_wallet = last_wallet.scalar_one()
-    if last_wallet.balance >= request.payment_sum:
-        new_balance = last_wallet.balance - request.payment_sum
-        kitobz = models.Kitobz(number=request.number,
-                               payment_sum=request.payment_sum)
-        
-        last_wallet.balance = new_balance
-        await db.commit()
-        db.add(kitobz)
-        await db.commit()
-        await db.refresh(kitobz)
-        return kitobz
-    
-    else:
-        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                            detail=f'{"You dont have enough balance"}')
-    
-
-
-# api to get all paid tojnet
-@app.get('/tojnet', status_code=status.HTTP_200_OK, tags=['tojnet'])
-async def tojnet():
-    async with mysql_session() as session:
-        tojnet = await session.execute(select(models.Tojnet).order_by(models.Tojnet.id))
-    return tojnet.scalars().all()
-
-
-
-
-# api to pay for tojnet
-@app.post('/tojnet', status_code=status.HTTP_202_ACCEPTED, tags=['tojnet'])
-async def tojnet_pay(request: schemas.Tojnet, db: AsyncSession = Depends(get_mysql_db)):
-    last_wallet = await db.execute(select(models.Wallet).order_by(desc(models.Wallet.id)).limit(1))
-    last_wallet = last_wallet.scalar_one()
-    if last_wallet.balance >= request.payment_sum:
-        new_balance = last_wallet.balance - request.payment_sum
-        tojnet = models.Tojnet(account_number=request.account_number,
-                               payment_sum=request.payment_sum)
-        
-        last_wallet.balance = new_balance
-        await db.commit()
-        db.add(tojnet)
-        await db.commit()
-        await db.refresh(tojnet)
-        return tojnet
-    
-    else:
-        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                            detail=f'{"You dont have enough balance"}')
-    
-
 
 
 # #api to send http request to internal servers
