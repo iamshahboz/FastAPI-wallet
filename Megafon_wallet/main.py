@@ -1,10 +1,7 @@
 from fastapi import FastAPI
 from fastapi import Depends, status, Response, HTTPException
 import models, schemas
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from sqlalchemy import desc
-import asyncio
 from time import time
 import aiohttp
 
@@ -18,7 +15,7 @@ app = FastAPI(
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, select
+from sqlalchemy.orm import sessionmaker
 import toml
 
 # Load database configuration from settings.toml
