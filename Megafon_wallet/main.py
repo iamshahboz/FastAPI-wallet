@@ -1,9 +1,12 @@
 from fastapi import FastAPI
 from fastapi import Depends, status, Response, HTTPException
 import models, schemas
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import desc
+import asyncio
 from time import time
 import aiohttp
+from sqlalchemy import select
 
 
 
