@@ -1,68 +1,72 @@
 # importing dependencies
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
-from postgresdb import Base as postgresbase
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declarative_base
+
+
+Base = declarative_base()
+metadata = Base.metadata
 
 
 # Models with required fields
 # The models below till DodoPizza will be stored in PostgreSQL database including Wallet
-class Wallet(postgresbase):
+class Wallet(Base):
     __tablename__ = 'wallets'
     id = Column(Integer, primary_key=True, index=True)
     phone_number = Column(Integer, unique=True)
     balance = Column(Integer, nullable=False)
 
 
-class Mobile_Network(postgresbase):
+class Mobile_Network(Base):
     __tablename__ = 'mobile_networks'
     id = Column(Integer, primary_key=True, index=True)
     phone_number = Column(Integer,nullable=False)
     payment_sum = Column(Integer,nullable=False)
 
 
-class Mavgi_Somon(postgresbase):
+class Mavgi_Somon(Base):
     __tablename__ = "mavgi_somon"
     id = Column(Integer, primary_key=True, index=True)
     account_number = Column(Integer,nullable=False)
     payment_sum = Column(Integer,nullable=False)
 
 
-class Shabakatj(postgresbase):
+class Shabakatj(Base):
     __tablename__= "shabakatj"
     id = Column(Integer, primary_key=True, index=True)
     account_number = Column(Integer,nullable=False)
     payment_sum = Column(Integer,nullable=False)
 
 
-class Khayriyai_Ozod(postgresbase):
+class Khayriyai_Ozod(Base):
     __tablename__= "khayriyai_ozod"
     id = Column(Integer, primary_key=True, index=True)
     phone_number = Column(Integer,nullable=False)
     payment_sum = Column(Integer,nullable=False)
 
 # The models belove will be stored in MySQL database, including Wallet model
-class DodoPizza(postgresbase):
+class DodoPizza(Base):
     __tablename__= "dodopizza"
     id = Column(Integer, primary_key=True, index=True)
     order_number = Column(Integer,nullable=False)
     payment_sum = Column(Integer,nullable=False)
  
 
-class Salomat_tj(postgresbase):
+class Salomat_tj(Base):
     __tablename__= "salomat_tj"
     id = Column(Integer, primary_key=True, index=True)
     number = Column(Integer,nullable=False)
     payment_sum = Column(Integer,nullable=False)
 
 
-class Kitobz(postgresbase):
+class Kitobz(Base):
     __tablename__= "kitobz"
     id = Column(Integer, primary_key=True, index=True)
     number = Column(Integer,nullable=False)
     payment_sum = Column(Integer,nullable=False)
 
 
-class Tojnet(postgresbase):
+class Tojnet(Base):
     __tablename__= "tojnet"
     id = Column(Integer, primary_key=True, index=True)
     account_number = Column(Integer,nullable=False)
