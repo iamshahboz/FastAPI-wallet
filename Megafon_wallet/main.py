@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from fastapi import Depends, status, Response, HTTPException
 import models, schemas
 from sqlalchemy.ext.asyncio import AsyncSession
-from postgresdb import SessionLocal as postgres_session,engine as postgres_engine,Base as postgres_base
 from sqlalchemy import select
 from sqlalchemy import desc
 import asyncio
@@ -17,18 +16,29 @@ app = FastAPI(
 )
 
 
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, select
+import toml
 
+# Load database configuration from settings.toml
+config_data = toml.load('settings.toml')
+SQLALCHEMY_POSTGRES_DATABASE_URL = config_data['database']['postgresql_url']
 
+# Create the async database engine
+engine = create_async_engine(SQLALCHEMY_POSTGRES_DATABASE_URL)
 
+# Create a sessionmaker for async sessions
+async_session = sessionmaker(
+    engine, expire_on_commit=False, class_=AsyncSession
+)
 
+Base = declarative_base()
 
 
 async def get_postgres_db():
-    db_session = postgres_session()
-    try:
-        yield db_session
-    finally:
-        await db_session.close()
+    async with async_session() as session:
+        yield session
 
 
 
@@ -38,7 +48,7 @@ async def get_postgres_db():
 # api to get all wallets
 @app.get('/wallets', status_code=status.HTTP_200_OK, tags=['wallet'])
 async def all_wallets():
-    async with postgres_session() as session:
+    async with get_postgres_db() as session:
         wallets = await session.execute(select(models.Wallet).order_by(models.Wallet.id))
     return wallets.scalars().all()
 
@@ -93,14 +103,14 @@ async def network_pay(request: schemas.Mobile_Network, db: AsyncSession = Depend
 # api to get the list of paid mobile network  
 @app.get('/mobile_network',status_code = status.HTTP_200_OK,tags=['mobile_network'])
 async def all_networks():
-    async with postgres_session() as session:
+    async with get_postgres_db() as session:
         networks = await session.execute(select(models.Mobile_Network).order_by(models.Mobile_Network.id))
     return networks.scalars().all()
 
 #api to get all paid for Mavji Somon
 @app.get('/mavji_somon', status_code=status.HTTP_200_OK, tags=['mavji_somon'])
 async def all_mavji_somon():
-    async with postgres_session() as session:
+    async with get_postgres_db() as session:
         mavjisomon = await session.execute(select(models.Mavgi_Somon).order_by(models.Mavgi_Somon.id))
     return mavjisomon.scalars().all()
 
@@ -128,7 +138,7 @@ async def mavji_somon_pay(request: schemas.Mavgi_Somon, db: AsyncSession = Depen
 #api to get all paid for Shabakatj
 @app.get('/shabakatj', status_code=status.HTTP_200_OK, tags=['shabakatj'])
 async def all_shabakatj():
-    async with postgres_session() as session:
+    async with get_postgres_db() as session:
         shabakatj = await session.execute(select(models.Shabakatj).order_by(models.Shabakatj.id))
     return shabakatj.scalars().all()
 
@@ -156,7 +166,7 @@ async def shabakatj_pay(request: schemas.Shabakatj, db: AsyncSession = Depends(g
 # api to get all Khayriyai_Ozod
 @app.get('/khayriyai_ozod', status_code=status.HTTP_200_OK, tags=['khayriyai_ozod'])
 async def all_khayriyai_ozod():
-    async with postgres_session() as session:
+    async with get_postgres_db() as session:
         khayriyai_ozod = await session.execute(select(models.Khayriyai_Ozod).order_by(models.Khayriyai_Ozod.id))
     return khayriyai_ozod.scalars().all()
 
