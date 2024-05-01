@@ -7,6 +7,7 @@ import asyncio
 from time import time
 import aiohttp
 from sqlalchemy import select
+import uvicorn
 
 
 
@@ -14,6 +15,8 @@ app = FastAPI(
     title= "Megafon_wallet",
     description = "This project handles payment with wallet"
 )
+
+
 
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -40,6 +43,10 @@ async def get_postgres_db():
     async with async_session() as session:
         yield session
 
+
+@app.get("/", tags=["homepage"])
+async def homepage()-> dict:
+    return {"message": "Welcome to the home page"}
 
 
 
@@ -213,6 +220,10 @@ async def get_quotes():
         async with session.get("https://ron-swanson-quotes.herokuapp.com/v2/quotes") as response:
             data = await response.json()
             return data
+        
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=1010)
 
 
 
