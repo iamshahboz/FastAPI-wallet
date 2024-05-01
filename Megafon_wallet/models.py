@@ -71,6 +71,8 @@ class Tojnet(Base):
     id = Column(Integer, primary_key=True, index=True)
     account_number = Column(Integer,nullable=False)
     payment_sum = Column(Integer,nullable=False)
+
+
     
 
 
