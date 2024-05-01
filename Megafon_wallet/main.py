@@ -223,7 +223,11 @@ async def get_quotes():
         
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=1010)
+    uvicorn.run("main:app", host="0.0.0.0", port=1010, reload=True)
+    
+
+
+
 
 
 
