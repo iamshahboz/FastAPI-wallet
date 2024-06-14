@@ -1,76 +1,45 @@
 # importing dependencies
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Enum
+from enum import Enum 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-
+from sqlalchemy.sql import func
 
 Base = declarative_base()
 metadata = Base.metadata
 
 
-# Models with required fields
-# The models below till DodoPizza will be stored in PostgreSQL database including Wallet
-class Wallet(Base):
-    __tablename__ = 'wallets'
-    id = Column(Integer, primary_key=True, index=True)
-    phone_number = Column(Integer, unique=True)
-    balance = Column(Integer, nullable=False)
 
-
-class Mobile_Network(Base):
-    __tablename__ = 'mobile_networks'
-    id = Column(Integer, primary_key=True, index=True)
-    phone_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-
-class Mavgi_Somon(Base):
-    __tablename__ = "mavgi_somon"
-    id = Column(Integer, primary_key=True, index=True)
-    account_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-
-class Shabakatj(Base):
-    __tablename__= "shabakatj"
-    id = Column(Integer, primary_key=True, index=True)
-    account_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-
-class Khayriyai_Ozod(Base):
-    __tablename__= "khayriyai_ozod"
-    id = Column(Integer, primary_key=True, index=True)
-    phone_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-# The models belove will be stored in MySQL database, including Wallet model
-class DodoPizza(Base):
-    __tablename__= "dodopizza"
-    id = Column(Integer, primary_key=True, index=True)
-    order_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
- 
-
-class Salomat_tj(Base):
-    __tablename__= "salomat_tj"
-    id = Column(Integer, primary_key=True, index=True)
-    number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-
-class Kitobz(Base):
-    __tablename__= "kitobz"
-    id = Column(Integer, primary_key=True, index=True)
-    number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
-
-
-class Tojnet(Base):
-    __tablename__= "tojnet"
-    id = Column(Integer, primary_key=True, index=True)
-    account_number = Column(Integer,nullable=False)
-    payment_sum = Column(Integer,nullable=False)
+class User(Base):
+    '''
+    User model
+    '''
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    phone = Column(Integer, nullable=False, unique=True)
+    balance = Column(Float, nullable=False)
+    password_hash = Column(String)
+    created_date = Column(DateTime(timezone=True), default=func.now())
+    
+    
+class TransactionStatus(Enum):
+    FAILED = 'Failed'
+    PENDING = 'Pending'
+    SUCCESS = 'Success'
+       
+    
+class Transaction(Base):
+    '''
+    Transaction model
+    '''
+    __tablename__ = 'transactions'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    sender = Column(Integer, ForeignKey('users.id'))
+    receiver = Column(Integer, ForeignKey('users.id'))
+    amount = Column(Float, nullable=False)
+    created_date = Column(DateTime(timezone=True), default=func.now())
+    status = Column(Enum(TransactionStatus))
+    
 
 
     
